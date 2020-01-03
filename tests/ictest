@@ -1,0 +1,29 @@
+#!/usr/bin/env -S octave -qf
+
+pkg load geometry
+
+addpath('..');
+
+c1 = [0 1];
+r1 = 1.3;
+c2 = [1 -1];
+r2 = 2;
+
+[cnt, note] = CirclesTest(c1, r1, c2, r2)
+if (cnt > 0)
+  [i1, i2] = IntersectCircles(c1, r1, c2, r2);
+endif
+
+figure;
+hold on;
+axis equal;
+drawCircle(c1, r1);
+drawCircle(c2, r2);
+if (cnt>0)
+  drawPoint(i1, 'color', 'blue');
+  if (cnt>1)
+    drawPoint(i2, 'color', 'blue');
+  endif
+endif
+waitforbuttonpress();
+
