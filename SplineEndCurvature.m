@@ -12,7 +12,7 @@ function cu = SplineEndCurvature(s, at_end)
   else
     cu = (2.0/3.0) * Cross2D(v1, v2) / l1_3;
   endif
-  if (abs(cu) < 1e-4)
+  if (abs(cu) < 2e-4)
     cu = 0;
   endif
 endfunction

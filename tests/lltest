@@ -1,0 +1,22 @@
+#!/usr/bin/env -S octave -qf
+
+pkg load geometry
+
+addpath('..');
+
+lp1 = [-1 4];
+luv1 = normalizeVector([1, 3]);
+lp2 = [1 -1];
+luv2 = normalizeVector([2 -1]);
+
+i = IntersectLines(lp1, luv1, lp2, luv2);
+
+figure;
+hold on;
+axis equal;
+plot([(lp1(1)-luv1(1)*10) (lp1(1)+luv1(1)*10)], [(lp1(2)-luv1(2)*10) (lp1(2)+luv1(2)*10)]);
+plot([(lp2(1)-luv2(1)*10) (lp2(1)+luv2(1)*10)], [(lp2(2)-luv2(2)*10) (lp2(2)+luv2(2)*10)]);
+if (!isinf(i(1)))
+  drawPoint(i, 'color', 'blue');
+endif
+waitforbuttonpress();

@@ -1,0 +1,23 @@
+#!/usr/bin/env -S octave -qf
+
+pkg load geometry
+
+addpath('..');
+
+l1 = [0 1];
+luv = normalizeVector([4 5]);
+p = [3 14];
+
+#pp = projPointOnLine(p, createLine(l1, l1+luv));
+pp = ProjectPointOnLine(p, l1, luv);
+
+figure;
+hold on;
+axis equal;
+drawPoint(p);
+drawPoint(l1, 'marker', '*');
+t1 = l1+20*luv;
+t2 = l1-20*luv;
+plot([t1(1) t2(1)], [t1(2) t2(2)]);
+drawPoint(pp, 'marker', '+');
+waitforbuttonpress();

@@ -7,18 +7,20 @@ addpath('..');
 p1 = [2 0];
 v1 = normalizeVector([4 10]);
 #r1 = 3.4;
-r1 = 4;
+r1 = 2;
 l1 = [5 0];
-l2 = [6 1];
+l2 = [6 3];
+luv = normalizeVector(l2-l1);
 
 c1 = p1 + v1 * r1;
 
-[cnt] = LineCircleTest(l1, l2, c1, r1)
+cnt = LineCircleTest(l1, luv, c1, r1)
 if (cnt==0)
-  r = AdjustLineCircle(l1, l2, p1, v1)
-  c1r = p1 + v1 * r;
+  r = AdjustLineCircle(l1, luv, p1, v1)
+  c1r = p1 + v1*r;
+  i = ProjectPointOnLine(c1r, l1, luv);
 else
-  [i1, i2] = IntersectLineCircle(l1, l2, c1, r1)
+  [i1, i2] = IntersectLineCircle(l1, luv, c1, r1)
 endif
 
 figure;
@@ -26,10 +28,13 @@ hold on;
 axis equal;
 drawPoint(p1);
 plot([p1(1),  p1(1)+v1(1)], [p1(2), p1(2)+v1(2)]);
-drawLine(createLine(l1, l2));
+t1 = l1 + luv*5;
+t2 = l1 - luv*5;
+plot([t1(1) t2(1)], [t1(2) t2(2)]);
 drawCircle(c1, r1);
 if (cnt==0)
   drawCircle(c1r, r);
+  drawPoint(i, 'color', 'blue');
 else
   if (cnt>0)
     drawPoint(i1, 'color', 'blue');

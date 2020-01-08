@@ -1,9 +1,7 @@
-function r = AdjustLineCircle(l1, l2, p1, v1)
-  A = l2(2)-l1(2);
-  B = l2(1)-l1(1);
-  D = A*p1(1) - B*p1(2) + l2(1)*l1(2) - l2(2)*l1(1);
-  E = A*v1(1) - B*v1(2);
-  a = A**2 + B**2 - E**2;
+function r = AdjustLineCircle(l1, luv, p1, v1)
+  D = Cross2D(luv, l1-p1);
+  E = Cross2D(v1, luv);
+  a = 1 - E**2;
   b = -2*D*E;
   c = -D**2
   d = b**2 - 4*a*c
