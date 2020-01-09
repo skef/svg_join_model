@@ -3,61 +3,57 @@
 pkg load geometry
 
 # Common parameters
-# join = "arcs";
-join = "miterclip";
-miterlimit = 2;
-# join = "round";
+join = "round";
+miterlimit = 4;
+strokewidth = 8;
 
-# Offset spline geometry inputs (comment out to enable alternate inputs)
-s1 = [365.73 402.6; 365.73 404.6; 366.5 404.9; 367 405];
-s2 = [367.45 406.9; 366.97 407.14; 366.46 407.26; 365.95 407.26];
+# "Source" spline geometry inputs
+#s1 = [355 396; 355 411; 365 421; 375 416];
+#s2 = [375 416; 370 416; 360 406; 365 391];
+#s1 = [375 396; 375 411; 365 421; 355 416];
+#s2 = [355 416; 360 416; 370 406; 365 391];
+#s1 = [355 396; 355 411; 365 421; 375 416];
+#s2 = [375 416; 375 406; 372 405; 364 395];
+#s1 = [346 425; 355 416; 364 414; 375 416];
+#s2 = [375 416; 367 412; 360 406; 365 391];
+#s1 = [375 425; 366 416; 357 414; 346 416];
+#s1 = [354 398; 360 400; 372 412; 374 420];
+#s2 = [374 420; 377 415; 373 396; 365 391];
+s1 = [374 398; 368 400; 356 412; 354 420];
+s2 = [354 420; 351 415; 355 396; 363 391];
 
-# Alternate "stipulated" geometry inputs
-p1 = [ 1, 0 ];
-tv1 = normalizeVector([ 0, 1 ]);
-cu1 = -0.3;
-p2 = [ 0, 1 ];
-tv2 = normalizeVector([ 1, 0 ]);
-cu2 = -.05;
+#s1 = [363 402; 363 405; 365 407; 367 406];
+#s2 = [367 406; 366 406; 364 404; 365 401];
 
 # Compute derived parameters
 
-if (exist("s1") != 0)
-  p1 = s1(4, :);
-  tv1 = normalizeVector(p1 - s1(3, :));
-  cu1 = SplineEndCurvature(s1, 1);
-endif
-
-if (exist("s2") != 0)
-  p2 = s2(1, :);
-  tv2 = normalizeVector(s2(2, :) - p2);
-  cu2 = SplineEndCurvature(s2, 0);
-endif
-
+jp.join = join;
+jp.ojp = s1(4, :);       # The origin point of the join
+jp.sw = strokewidth;     # The stroke width
 if (exist("miterlimit") == 0)
-  miterlimit = 4; # SVG2 spec default
+  jp.ml = 4;             # SVG2 spec default
+else
+  jp.ml = miterlimit;
 endif
 
-ojp = IntersectLines(p1, rotateVector(tv1, pi/2), p2, rotateVector(tv2, pi/2));
+jp.tv1 = normalizeVector(jp.ojp - s1(3, :));
+jp.tv2 = normalizeVector(s2(2, :) - jp.ojp);
 
-d1 = norm(ojp-p1);
-d2 = norm(ojp-p2);
-if (abs(d1-d2) >= .5)
-  warning("Offsets (based on normal vector intersection) differ by more than .5 -- clipping geometry and round join will be invalid");
+jp.jbs = JoinBendSign(jp.tv1, jp.tv2);
+if (jp.jbs==-1)
+  "Join bends clockwise, calculating for left side offset"
+elseif (jp.jbs==1)
+  "Join bends counter-clockwise, calculating for right side offset"
+else
+  "Join doesn't bend (sufficiently), nothing to calculate"
+  quit;
 endif
-sw = d1+d2;
 
-jp.join = join;     # The join type
-jp.ojp = ojp;       # The origin point of the join
-jp.sw = sw;         # The stroke width
-jp.jbs = JoinBendSign(tv1, tv2)
-jp.ml = miterlimit; # stroke-miterlimit
-jp.p1 = p1;         # The end of the offset curve 1
-jp.tv1 = tv1;       # Its unit tangent vector
-jp.cu1 = cu1;       # Its curvature
-jp.p2 = p2;         # The start of offset curve 2
-jp.tv2 = tv2;       # Its unit tangent vector
-jp.cu2 = cu2;       # Its curvature
+jp.p1 = jp.ojp - Rotate90CCW(jp.tv1) * jp.jbs * jp.sw/2;
+jp.cu1 = SplineEndCurvature(s1, 1) / (1 + 2/jp.sw);
+
+jp.p2 = jp.ojp - Rotate90CCW(jp.tv2) * jp.jbs * jp.sw/2;
+jp.cu2 = SplineEndCurvature(s2, 0) / (1 + 2/jp.sw);
 
 if (strcmp(join, "arcs"))
   jsa = ArcsJoin(jp);
@@ -82,7 +78,6 @@ if (exist("s2") != 0)
 endif
 drawPoint(jp.p1, 'color', 'blue');
 drawPoint(jp.p2, 'color', 'green');
-drawPoint(jp.ojp, 'color', 'red', 'marker', '+');
 for jsi = 1:length(jsa)
   if (numel(jsa{jsi})==5)
     drawCircleArc(jsa{jsi});

@@ -6,7 +6,6 @@ addpath('..');
 
 p1 = [2 -1];
 v1 = normalizeVector([4 10]);
-#r1 = .7;
 r1 = 5;
 p2 = [3 1];
 v2 = normalizeVector([10 5]);

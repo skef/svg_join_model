@@ -1,17 +1,18 @@
 function jsa = ArcsJoin(jp)
   if (jp.cu1!=0)
     r1 = abs(1/jp.cu1);
-    cv1 = rotateVector(jp.tv1, sign(jp.cu1)*pi/2);
+    cv1 = sign(jp.cu1) * Rotate90CCW(jp.tv1);
     c1 = jp.p1 + cv1 * r1;
   endif
   if (jp.cu2!=0)
     r2 = abs(1/jp.cu2);
-    cv2 = rotateVector(jp.tv2, sign(jp.cu2)*pi/2);
+    cv2 = sign(jp.cu2) * Rotate90CCW(jp.tv2);
     c2 = jp.p2 + cv2 * r2;
   endif
   jl = CalcJoinLength(jp);
 
   if ((jp.cu1==0 && jp.cu2==0) || isinf(jl))
+      "Both points have no curvature or tangents are parallel -- falling back to miterclip"
       jsa = MiterJoin(jp);
       return;
   endif
@@ -32,7 +33,30 @@ function jsa = ArcsJoin(jp)
     [cnt, note] = CirclesTest(c1, r1, c2, r2);
     if (cnt>0)
       [i1, i2] = IntersectCircles(c1, r1, c2, r2);
+    else
+#      jsa{1} = [c1(1), c1(2), r1, 0, 360];
+#      jsa{2} = [c2(1), c2(2), r2, 0, 360];
+#      return;
+      if (note==-2)
+        [r2, r1] = AdjustCircles(jp.p2, cv2, r2, jp.p1, cv1, r1, 1);
+      else
+        [r1, r2] = AdjustCircles(jp.p1, cv1, r1, jp.p2, cv2, r2, note<0);
+      endif
+      c1 = jp.p1 + cv1 * r1;
+      c2 = jp.p2 + cv2 * r2;
+      cnt = 1;
+      if (note==-2)
+        i1 = c2 + normalizeVector(c1-c2)*r2;
+      else
+        i1 = c1 + normalizeVector(c2-c1)*r1;
+      endif
     endif
+  endif
+
+  if (r1 < jp.sw/2 || r2 < jp.sw/2)
+      "At least one curvature is greater than 2/strokewidth -- falling back to round"
+      jsa = RoundJoin(jp);
+      return;
   endif
 
   if (cnt > 1)
@@ -59,11 +83,11 @@ function jsa = ArcsJoin(jp)
   endif
   if (jp.cu2!=0)
     if (jp.cu2>0)
-      ext2 = rad2deg(vectorAngle(jp.p2-c2, i-c2));
+      ext2 = rad2deg(vectorAngle(i-c2, jp.p2-c2));
     else
-      ext2 = -rad2deg(vectorAngle(i-c2, jp.p2-c2));
+      ext2 = -rad2deg(vectorAngle(jp.p2-c2, i-c2));
     endif
-    jsa{2} = [c2(1), c2(2), r2, rad2deg(vectorAngle(jp.p2-c2)), ext2];
+    jsa{2} = [c2(1), c2(2), r2, rad2deg(vectorAngle(i-c2)), ext2];
   else
     jsa{2} = [i, jp.p2];
   endif

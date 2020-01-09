@@ -11,10 +11,10 @@ function jsa = MiterJoin(jp)
     return;
   endif
   clut = normalizeVector(jp.p2-jp.p1);
-  clp = jp.ojp + rotateVector(clut, jp.jbs*pi/2) * max_jl/2;
+  clp = jp.ojp - jp.jbs * Rotate90CCW(clut) * max_jl/2;
   if (!LineSameSide(jp.p1, jp.p2, clp, jp.p1+jp.tv1))
     jsa = {[jp.p1, jp.p2]};
-    jsa{2} = [clp, clp+clut];
+#    jsa{2} = [clp, clp+clut];
     return;
   endif
   i1 = IntersectLines(jp.p1, jp.tv1, clp, clut);
