@@ -10,6 +10,6 @@ function jl = CalcJoinLength(jp, costheta)
   if (abs(costheta+1)<1e-5)
     jl = Inf;
   else
-    jl = jp.sw / sqrt((1 + dot(jp.tv1, jp.tv2))/2);
+    jl = jp.sw / sqrt((1 + costheta)/2);
   endif
 endfunction

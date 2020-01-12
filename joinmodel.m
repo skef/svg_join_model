@@ -3,15 +3,15 @@
 pkg load geometry
 
 # Common parameters
-join = "round";
-miterlimit = 4;
-strokewidth = 8;
+join = "arcs";
+miterlimit = 7;
+strokewidth = 5;
 
 # "Source" spline geometry inputs
 #s1 = [355 396; 355 411; 365 421; 375 416];
 #s2 = [375 416; 370 416; 360 406; 365 391];
-#s1 = [375 396; 375 411; 365 421; 355 416];
-#s2 = [355 416; 360 416; 370 406; 365 391];
+s1 = [375 396; 375 411; 365 421; 355 416];
+s2 = [355 416; 360 416; 370 406; 365 391];
 #s1 = [355 396; 355 411; 365 421; 375 416];
 #s2 = [375 416; 375 406; 372 405; 364 395];
 #s1 = [346 425; 355 416; 364 414; 375 416];
@@ -19,8 +19,15 @@ strokewidth = 8;
 #s1 = [375 425; 366 416; 357 414; 346 416];
 #s1 = [354 398; 360 400; 372 412; 374 420];
 #s2 = [374 420; 377 415; 373 396; 365 391];
-s1 = [374 398; 368 400; 356 412; 354 420];
-s2 = [354 420; 351 415; 355 396; 363 391];
+#s1 = [374 398; 368 400; 356 412; 354 420];
+#s2 = [354 420; 351 415; 355 396; 363 391];
+
+#s1 = [0 0; 25 40; 50 85; 200 100];
+#s2 = [200 100; 50 115; 25 160; 0 200];
+
+#s1 = [0 0; 25 40; 50 85; 200 100];
+#s1 = [0 0; 122 -11; 182 22; 200 100];
+#s2 = [200 100; 200 100; 0 100; 0 100];
 
 #s1 = [363 402; 363 405; 365 407; 367 406];
 #s2 = [367 406; 366 406; 364 404; 365 401];
@@ -36,8 +43,16 @@ else
   jp.ml = miterlimit;
 endif
 
-jp.tv1 = normalizeVector(jp.ojp - s1(3, :));
-jp.tv2 = normalizeVector(s2(2, :) - jp.ojp);
+if (jp.ojp == s1(3, :))
+  jp.tv1 = normalizeVector(jp.ojp - s1(1, :));
+else
+  jp.tv1 = normalizeVector(jp.ojp - s1(3, :));
+endif
+if (jp.ojp == s2(2, :))
+  jp.tv2 = normalizeVector(s2(4, :) - jp.ojp);
+else
+  jp.tv2 = normalizeVector(s2(2, :) - jp.ojp);
+endif
 
 jp.jbs = JoinBendSign(jp.tv1, jp.tv2);
 if (jp.jbs==-1)
@@ -62,7 +77,7 @@ elseif (strcmp(join, "miterclip") || strcmp(join,"miter"))
 elseif (strcmp(join, "round"))
   jsa = RoundJoin(jp);
 elseif (strcmp(join, "bevel"))
-  jsa = {[jp.p1 jp.p2]};
+  jsa = {{jp.p1 jp.p2}};
 else
   error("Join Type Unrecognized");
 endif
@@ -80,9 +95,21 @@ drawPoint(jp.p1, 'color', 'blue');
 drawPoint(jp.p2, 'color', 'green');
 for jsi = 1:length(jsa)
   if (numel(jsa{jsi})==5)
-    drawCircleArc(jsa{jsi});
-  elseif (numel(jsa{jsi})==4);
-    plot([jsa{jsi}(1) jsa{jsi}(3)], [jsa{jsi}(2) jsa{jsi}(4)]);
+    c = jsa{jsi}{1};
+    r = jsa{jsi}{2};
+    sgn = jsa{jsi}{5};
+    v1 = jsa{jsi}{3};
+    v2 = jsa{jsi}{4};
+    if (sgn>0)
+      ext = rad2deg(vectorAngle(v1, v2));
+    else
+      ext = -rad2deg(vectorAngle(v2, v1));
+    endif
+    drawCircleArc([c(1), c(2), r, rad2deg(vectorAngle(v1)), ext]);
+  elseif (numel(jsa{jsi})==2);
+    pp1 = jsa{jsi}{1};
+    pp2 = jsa{jsi}{2};
+    plot([pp1(1) pp2(1)], [pp1(2) pp2(2)]);
   else
     warning("Unrecognized join segment");
     jsa{jsi}

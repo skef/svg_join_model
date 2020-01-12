@@ -1,3 +1,5 @@
+# Returns the number of intersections between the line and circle.
+# The line is defined as a point and a unit tangent "slope".
 function cnt = LineCircleTest(lp, luv, c1, r1)
   cl_dist = PointLineDistance(c1, lp, luv);
   cnt = 2;

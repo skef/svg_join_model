@@ -1,3 +1,5 @@
+# Returns the intersection of the two lines, or [Inf Inf] if they are parallel.
+# Each line is defined by point and a unit vector "slope"
 function [i1] = IntersectLines(lp1, luv1, lp2, luv2)
   cl1 = Cross2D(luv1, lp1);
   cl2 = Cross2D(luv2, lp2);
