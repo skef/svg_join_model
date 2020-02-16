@@ -1,4 +1,4 @@
 # Returns the maximum join length given the supplied miterlimit and strokewidth.
 function mjl = MaxJoinLength(jp)
-  mjl = jp.ml * jp.sw / 2;
+  mjl = jp.ml * jp.sw;
 endfunction

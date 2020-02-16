@@ -6,5 +6,5 @@ function s = JoinBendSign(tv1, tv2)
   if (abs(cp)<1e-8)
     cp = 0;
   endif
-  s = sign(cp)
+  s = sign(cp);
 endfunction

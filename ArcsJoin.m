@@ -114,7 +114,7 @@ function jsa = ArcsJoin(jp)
        crefv = Rotate90CCW(clipv2);
     endif
   elseif ((max_jl/2) < l_cv2*pi/2) # Conservative check
-    [jlc, jlr, jls] = PVPCircle(jp.ojp, (jp.tv1-jp.tv2)/2, i);
+    [jlc, jlr, jls] = PVPCircle(jp.ojp, clipv1, i);
     max_angle_diff = (max_jl/2)/jlr;
     start_angle = vectorAngle(jp.ojp-jlc);
     end_angle = vectorAngle(i-jlc);

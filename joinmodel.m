@@ -4,14 +4,14 @@ pkg load geometry
 
 # Common parameters
 join = "arcs";
-miterlimit = 7;
-strokewidth = 5;
+miterlimit = 4;
+strokewidth = 10;
 
 # "Source" spline geometry inputs
-#s1 = [355 396; 355 411; 365 421; 375 416];
-#s2 = [375 416; 370 416; 360 406; 365 391];
-s1 = [375 396; 375 411; 365 421; 355 416];
-s2 = [355 416; 360 416; 370 406; 365 391];
+s1 = [355 396; 355 411; 365 421; 375 416];
+s2 = [375 416; 370 416; 360 406; 365 391];
+#s1 = [375 396; 375 411; 365 421; 355 416];
+#s2 = [355 416; 360 416; 370 406; 365 391];
 #s1 = [355 396; 355 411; 365 421; 375 416];
 #s2 = [375 416; 375 406; 372 405; 364 395];
 #s1 = [346 425; 355 416; 364 414; 375 416];
@@ -31,6 +31,10 @@ s2 = [355 416; 360 416; 370 406; 365 391];
 
 #s1 = [363 402; 363 405; 365 407; 367 406];
 #s2 = [367 406; 366 406; 364 404; 365 401];
+
+# cusp
+#s1 = [234.76 -15; 234.76 -15; 236 -13; 236 -13];
+#s2 = [236 -13; 235 -14; 233 -14; 231 -14];
 
 # Compute derived parameters
 
@@ -57,18 +61,34 @@ endif
 jp.jbs = JoinBendSign(jp.tv1, jp.tv2);
 if (jp.jbs==-1)
   "Join bends clockwise, calculating for left side offset"
+  jp.dir = "left";
 elseif (jp.jbs==1)
   "Join bends counter-clockwise, calculating for right side offset"
+  jp.dir = "right";
 else
   "Join doesn't bend (sufficiently), nothing to calculate"
   quit;
 endif
 
 jp.p1 = jp.ojp - Rotate90CCW(jp.tv1) * jp.jbs * jp.sw/2;
-jp.cu1 = SplineEndCurvature(s1, 1) / (1 + 2/jp.sw);
+raw_cu1 = SplineEndCurvature(s1, 1);
+cu1 = raw_cu1 / (1 + jp.jbs * raw_cu1 * jp.sw / 2);
+if (sign(raw_cu1) == sign(cu1))
+  jp.cu1 = cu1;
+else
+  warning("Incoming spline end on cusp -- using source spline curvature.");
+  jp.cu1 = raw_cu1;
+endif
 
 jp.p2 = jp.ojp - Rotate90CCW(jp.tv2) * jp.jbs * jp.sw/2;
-jp.cu2 = SplineEndCurvature(s2, 0) / (1 + 2/jp.sw);
+raw_cu2 = SplineEndCurvature(s2, 0);
+cu2 = raw_cu2 / (1 + jp.jbs * raw_cu2 * jp.sw / 2);
+if (sign(raw_cu2) == sign(cu2))
+  jp.cu2 = cu2;
+else
+  warning("Outgoing spline end on cusp -- using source spline curvature.");
+  jp.cu2 = raw_cu2;
+endif
 
 if (strcmp(join, "arcs"))
   jsa = ArcsJoin(jp);
@@ -81,6 +101,8 @@ elseif (strcmp(join, "bevel"))
 else
   error("Join Type Unrecognized");
 endif
+
+# Display results 
 
 figure;
 hold on;
